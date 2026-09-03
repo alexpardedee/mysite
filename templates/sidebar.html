@@ -1,0 +1,50 @@
+<div class="sidebar">
+    <div class="sidebar-brand text-center">
+        MY SITE
+    </div>
+    <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'Tamu') }}&background=38bdf8&color=111827" alt="Profile">
+        <div>
+            <div class="fw-bold" style="font-size: 0.95rem;">{{ session.get('username', 'Tamu') }}</div>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill" style="font-size: 0.65rem;">
+                <i class="fas fa-check-circle me-1"></i>{{ session.get('grade', 'tamu') | upper }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="sidebar-scroll mt-2">
+        <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %} mb-1">
+            <div><i class="fas fa-desktop main-icon"></i> Dashboard</div>
+        </a>
+        
+        <!-- Menu Utama Keuangan dengan Sub-Menu -->
+        <div class="mb-1">
+            <a href="#keuanganSubmenu" data-bs-toggle="collapse" class="nav-link d-flex justify-content-between align-items-center {% if '/keuangan' in request.path or '/tabungan' in request.path %}active{% endif %}">
+                <div><i class="fas fa-wallet main-icon"></i> Keuangan</div>
+                <i class="fas fa-chevron-down small"></i>
+            </a>
+            <div class="collapse {% if '/keuangan' in request.path or '/tabungan' in request.path %}show{% endif %} ps-3 mt-1" id="keuanganSubmenu">
+                <a href="{{ url_for('keuangan') }}" class="nav-link py-1 px-2 mb-1 {% if request.path == '/keuangan' %}text-primary fw-bold{% else %}text-muted{% endif %}" style="font-size: 0.85rem;">
+                    <i class="fas fa-arrow-right-arrow-left me-2"></i> Arus Kas
+                </a>
+                <a href="{{ url_for('tabungan') }}" class="nav-link py-1 px-2 mb-1 {% if request.path == '/tabungan' %}text-primary fw-bold{% else %}text-muted{% endif %}" style="font-size: 0.85rem;">
+                    <i class="fas fa-piggy-bank me-2"></i> Tabungan
+                </a>
+            </div>
+        </div>
+
+        <a href="{{ url_for('brangkas_link') }}" class="nav-link {% if request.path == '/brangkas-link' %}active{% endif %} mb-1">
+            <div><i class="fas fa-vault main-icon"></i> Brangkas Link</div>
+        </a>
+        
+        {% if session.get('grade') == 'developer' %}
+        <a href="{{ url_for('manajemen_akun') }}" class="nav-link {% if request.path == '/manajemen-akun' %}active{% endif %} mb-1">
+            <div><i class="fas fa-users-cog main-icon"></i> Manajemen Akun</div>
+        </a>
+        {% endif %}
+        
+        <a href="{{ url_for('logout') }}" class="nav-link text-danger mt-4">
+            <div><i class="fas fa-sign-out-alt main-icon text-danger"></i> Logout</div>
+        </a>
+    </div>
+</div>

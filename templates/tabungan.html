@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">TARGET TABUNGAN</h3>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">Kelola impian dan target tabungan finansial</p>
+    </div>
+    <button class="btn btn-primary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addSavingModal">
+        <i class="fas fa-piggy-bank me-1"></i> Buat Target Baru
+    </button>
+</div>
+
+<!-- Ringkasan Total Tabungan -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">TOTAL TERKUMPUL</div>
+                <div class="stat-value text-success" style="font-size: 1.5rem;">Rp {{ "{:,.0f}".format(total_savings) }}</div>
+            </div>
+            <div class="icon-box bg-light-green"><i class="fas fa-vault"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Grid Card Target Tabungan -->
+<div class="row g-3">
+    {% for s in savings_list %}
+    {% set percent = (s.current_amount / s.target_amount * 100) if s.target_amount > 0 else 0 %}
+    <div class="col-md-4">
+        <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between border border-secondary border-opacity-25">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-primary px-2 py-1" style="font-size: 0.75rem;">Target: Rp {{ "{:,.0f}".format(s.target_amount) }}</span>
+                    <span class="text-muted" style="font-size: 0.8rem;">Oleh <span class="text-purple fw-bold">{{ s.author }}</span></span>
+                </div>
+                <h5 class="fw-bold text-white mb-3">{{ s.title }}</h5>
+                
+                <div class="mb-2 d-flex justify-content-between" style="font-size: 0.85rem;">
+                    <span class="text-muted">Terkumpul: <strong class="text-success">Rp {{ "{:,.0f}".format(s.current_amount) }}</strong></span>
+                    <span class="text-primary fw-bold">{{ "%.1f"|format(percent) }}%</span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress mb-3" style="height: 8px; background-color: #1e293b;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent if percent <= 100 else 100 }}%;"></div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-25 mt-auto">
+                <button class="btn btn-sm btn-outline-info fw-bold" data-bs-toggle="modal" data-bs-target="#addAmountModal{{ s.id }}">
+                    <i class="fas fa-plus me-1"></i> Nabung
+                </button>
+                <form action="{{ url_for('hapus_tabungan', id=s.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus target tabungan ini?')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Saldo Nabung -->
+    <div class="modal fade" id="addAmountModal{{ s.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-light border border-secondary" style="background-color: var(--bg-panel);">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title fw-bold">Tambah Tabungan: {{ s.title }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('update_tabungan', id=s.id) }}" method="POST">
+                    <div class="modal-body text-start">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Nominal yang Ditabung (Rp)</label>
+                            <input type="number" step="any" class="form-control" name="add_amount" required placeholder="Contoh: 50000">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold">Tambah Saldo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="custom-card text-center text-muted py-5">
+            <i class="fas fa-piggy-bank fa-2x mb-3 text-secondary"></i>
+            <p class="mb-0">Belum ada target tabungan yang dibuat.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal Buat Target Tabungan Baru -->
+<div class="modal fade" id="addSavingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content text-light border border-secondary" style="background-color: var(--bg-panel);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Buat Target Tabungan Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tambah_tabungan') }}" method="POST">
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Nama Target / Impian</label>
+                        <input type="text" class="form-control" name="title" required placeholder="Contoh: Beli Server Baru / Liburan">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Target Nominal (Rp)</label>
+                        <input type="number" step="any" class="form-control" name="target_amount" required placeholder="Contoh: 5000000">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Saldo Awal (Opsional)</label>
+                        <input type="number" step="any" class="form-control" name="current_amount" placeholder="0">
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Simpan Target</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

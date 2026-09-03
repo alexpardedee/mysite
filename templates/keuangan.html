@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">PENCATATAN KEUANGAN</h3>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">Kelola arus kas pemasukan dan pengeluaran</p>
+    </div>
+    <button class="btn btn-primary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+        <i class="fas fa-plus-circle me-1"></i> Tambah Transaksi
+    </button>
+</div>
+
+<!-- Kartu Ringkasan Keuangan -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">TOTAL PEMASUKAN</div>
+                <div class="stat-value text-success" style="font-size: 1.5rem;">Rp {{ "{:,.0f}".format(total_in) }}</div>
+            </div>
+            <div class="icon-box bg-light-green"><i class="fas fa-arrow-down"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">TOTAL PENGELUARAN</div>
+                <div class="stat-value text-danger" style="font-size: 1.5rem;">Rp {{ "{:,.0f}".format(total_out) }}</div>
+            </div>
+            <div class="icon-box bg-light-blue" style="background-color: rgba(239, 68, 68, 0.2); color: #f87171;"><i class="fas fa-arrow-up"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">SISA SALDO</div>
+                <div class="stat-value text-primary" style="font-size: 1.5rem;">Rp {{ "{:,.0f}".format(balance) }}</div>
+            </div>
+            <div class="icon-box bg-light-blue"><i class="fas fa-wallet"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabel Riwayat Transaksi -->
+<div class="custom-card p-4">
+    <h6 class="fw-bold mb-3"><i class="fas fa-history text-primary me-2"></i> Riwayat Transaksi</h6>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Tipe</th>
+                    <th>Kategori</th>
+                    <th>Nominal</th>
+                    <th>Keterangan</th>
+                    <th>Bukti</th>
+                    <th>Oleh</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date }}</td>
+                    <td>
+                        {% if t.type == 'in' %}
+                            <span class="badge bg-success">Pemasukan</span>
+                        {% else %}
+                            <span class="badge bg-danger">Pengeluaran</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">{{ t.category }}</td>
+                    <td>
+                        <span class="fw-bold {% if t.type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.type == 'in' %}+{% else %}-{% endif %} Rp {{ "{:,.0f}".format(t.amount) }}
+                        </span>
+                    </td>
+                    <td class="text-muted">{{ t.description or '-' }}</td>
+                    <td>
+                        {% if t.proof_file %}
+                            <a href="{{ url_for('static', filename='uploads/' + t.proof_file) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-file-invoice me-1"></i> Lihat
+                            </a>
+                        {% else %}
+                            <span class="text-muted" style="font-size: 0.8rem;">Tidak ada</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="text-purple fw-bold">{{ t.author }}</span></td>
+                    <td>
+                        <form action="{{ url_for('hapus_transaksi', id=t.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus catatan transaksi ini?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Belum ada catatan transaksi keuangan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah Transaksi -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content text-light border border-secondary" style="background-color: var(--bg-panel);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Tambah Catatan Keuangan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tambah_transaksi') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Tanggal</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Tipe Transaksi</label>
+                        <select class="form-select" name="type" required>
+                            <option value="in">Pemasukan (Income)</option>
+                            <option value="out">Pengeluaran (Expense)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Kategori</label>
+                        <input type="text" class="form-control" name="category" required placeholder="Contoh: Gaji, Server, Konsumsi, dll.">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Nominal (Rp)</label>
+                        <input type="number" step="any" class="form-control" name="amount" required placeholder="Contoh: 150000">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Keterangan (Opsional)</label>
+                        <textarea class="form-control" name="description" rows="2" placeholder="Catatan tambahan..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Upload Bukti Pembayaran (Opsional)</label>
+                        <input type="file" class="form-control" name="proof_file" accept=".jpg, .jpeg, .png, .pdf">
+                        <small class="text-muted" style="font-size: 0.75rem;">Format yang didukung: JPG, PNG, PDF</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Simpan Transaksi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

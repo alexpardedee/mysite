@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">MONITORING MY OWN SERVER</h3>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">Sistem kontrol database Alex</p>
+    </div>
+    <div class="text-end">
+        <!-- Jam Aktif Real-time -->
+        <h3 class="fw-bold text-primary mb-1" id="live-clock">--:--:-- WIB</h3>
+        <!-- Tanggal Aktif Real-time -->
+        <p class="text-muted fw-bold mb-0" id="live-date" style="font-size: 0.9rem;">Memuat tanggal...</p>
+    </div>
+</div>
+
+<!-- System Broadcast Running Text -->
+<div class="custom-card p-2 mb-4 d-flex align-items-center border border-primary border-opacity-25 overflow-hidden">
+    <div class="px-3 text-primary fw-bold text-nowrap d-flex align-items-center" style="z-index: 2; background-color: var(--bg-panel);">
+         <i class="fas fa-broadcast-tower me-2"></i> SYSTEM BROADCAST:
+    </div>
+    <div class="flex-grow-1 overflow-hidden">
+        <marquee behavior="scroll" direction="left" scrollamount="5" class="text-muted mb-0 pt-1" style="font-size: 0.9rem;">
+            Seluruh layanan server berjalan normal. • Waspada kestabilan jaringan lokal anda • Hubungi Opung jika menemukan kendala sistem.
+        </marquee>
+    </div>
+</div>
+
+<!-- 2 Stat Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">STATUS SERVER</div>
+                <div class="stat-value text-green"><i class="fas fa-circle me-2" style="font-size: 1rem;"></i>Online</div>
+            </div>
+            <div class="icon-box bg-light-green"><i class="fas fa-server"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">SYSTEM UPTIME</div>
+                <div class="stat-value text-blue">99.9%</div>
+            </div>
+            <div class="icon-box bg-light-blue"><i class="fas fa-clock"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Ringkasan Keuangan Ringkas di Dashboard -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">TOTAL PEMASUKAN</div>
+                <div class="stat-value text-success" style="font-size: 1.3rem;">Rp {{ "{:,.0f}".format(total_in) }}</div>
+            </div>
+            <div class="icon-box bg-light-green"><i class="fas fa-arrow-down"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">TOTAL PENGELUARAN</div>
+                <div class="stat-value text-danger" style="font-size: 1.3rem;">Rp {{ "{:,.0f}".format(total_out) }}</div>
+            </div>
+            <div class="icon-box" style="background-color: rgba(239, 68, 68, 0.2); color: #f87171;"><i class="fas fa-arrow-up"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="stat-label">SISA SALDO KAS</div>
+                <div class="stat-value text-primary" style="font-size: 1.3rem;">Rp {{ "{:,.0f}".format(balance) }}</div>
+            </div>
+            <div class="icon-box bg-light-blue"><i class="fas fa-wallet"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Changelog Card -->
+<div class="custom-card changelog-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-rocket text-purple me-2"></i> NEW UPDATE & CHANGELOG</h6>
+        </div>
+        
+        <!-- Tombol Rilis Update Baru HANYA MUNCUL untuk Developer -->
+        {% if session.get('grade') == 'developer' %}
+        <button class="btn bg-purple text-white btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addChangelogModal" style="background-color: var(--accent-purple) !important; color: #111827 !important;">
+            <i class="fas fa-plus me-1"></i> Rilis Update Baru
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="changelog-list">
+        {% for log in changelogs %}
+        <div class="timeline-item d-flex gap-3">
+            <div class="mt-1"><span class="version-pill">{{ log.version }}</span></div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                    <div class="fw-bold">{{ log.title }}</div>
+                    <div class="text-muted" style="font-size: 0.85rem;"><i class="far fa-calendar-alt me-1"></i> {{ log.date }} • Oleh <span class="text-purple fw-bold">{{ log.author }}</span></div>
+                </div>
+                <p class="text-muted mb-0 mt-1" style="font-size: 0.9rem;">{{ log.description }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Form Rilis Update Baru (Khusus Developer) -->
+{% if session.get('grade') == 'developer' %}
+<div class="modal fade" id="addChangelogModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content text-light border border-secondary" style="background-color: var(--bg-panel);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Rilis Update & Changelog Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tambah_changelog') }}" method="POST">
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Versi (Auto-Generated)</label>
+                        <input type="text" class="form-control" name="version" required value="{{ next_version }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Judul / Kategori (Contoh: (!) BUG FIXED / (+) FITUR BARU)</label>
+                        <input type="text" class="form-control" name="title" required placeholder="(!) BUG FIXED">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Tanggal Rilis</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Deskripsi Perubahan</label>
+                        <textarea class="form-control" name="description" rows="3" required placeholder="Tuliskan detail perbaikan atau penambahan fitur..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Publikasikan Rilis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Script JavaScript untuk Jam dan Tanggal Real-time -->
+<script>
+    function updateClock() {
+        const now = new Date();
+        
+        // Format Jam (HH:MM:SS)
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('live-clock').innerText = `${hours}:${minutes}:${seconds} WIB`;
+        
+        // Format Tanggal (Hari, Tanggal Bulan Tahun) dalam Bahasa Indonesia
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('live-date').innerText = now.toLocaleDateString('id-ID', options);
+    }
+
+    // Jalankan saat halaman dimuat, lalu perbarui tiap 1 detik
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+{% endblock %}

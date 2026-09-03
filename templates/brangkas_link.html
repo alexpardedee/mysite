@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">BRANGKAS LINK</h3>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">Simpan dan kelola tautan penting agar tidak tercecer</p>
+    </div>
+    <button class="btn btn-primary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addLinkModal">
+        <i class="fas fa-link me-1"></i> Simpan Link Baru
+    </button>
+</div>
+
+<!-- Grid Card Daftar Link -->
+<div class="row g-3">
+    {% for l in links %}
+    <div class="col-md-4">
+        <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between border border-secondary border-opacity-25 shadow-sm">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-secondary px-2 py-1" style="font-size: 0.75rem;">{{ l.category }}</span>
+                    <span class="text-muted" style="font-size: 0.8rem;"><i class="fas fa-user-circle me-1"></i><span class="text-purple fw-bold">{{ l.author }}</span></span>
+                </div>
+                <h5 class="fw-bold text-white mb-2 text-truncate" title="{{ l.title }}">{{ l.title }}</h5>
+                <p class="text-muted text-truncate mb-3" style="font-size: 0.85rem;">
+                    <a href="{{ l.url }}" target="_blank" class="text-primary text-decoration-none">
+                        <i class="fas fa-external-link-alt me-1"></i> {{ l.url }}
+                    </a>
+                </p>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-25 mt-auto">
+                <a href="{{ l.url }}" target="_blank" class="btn btn-sm btn-outline-success fw-bold px-3">
+                    <i class="fas fa-arrow-right me-1"></i> Kunjungi
+                </a>
+                <form action="{{ url_for('hapus_link', id=l.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus link ini dari brangkas?')" title="Hapus Link">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="custom-card text-center text-muted py-5">
+            <i class="fas fa-folder-open fa-2x mb-3 text-secondary"></i>
+            <p class="mb-0">Belum ada link yang disimpan di brangkas.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal Tambah Link -->
+<div class="modal fade" id="addLinkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content text-light border border-secondary" style="background-color: var(--bg-panel);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Simpan Link Penting Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tambah_link') }}" method="POST">
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Judul / Nama Web / Keperluan</label>
+                        <input type="text" class="form-control" name="title" required placeholder="Contoh: Portal Aiven DB / Dokumentasi Flask">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">URL Tautan (https://...)</label>
+                        <input type="url" class="form-control" name="url" required placeholder="https://console.aiven.io/...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Kategori</label>
+                        <select class="form-select" name="category" required style="background-color: #1e293b; color: #f8fafc; border: 1px solid #334155;">
+                            <option value="" disabled selected>Pilih Kategori...</option>
+                            <option value="Database">Database</option>
+                            <option value="Tools Kerja">Tools Kerja</option>
+                            <option value="Referensi">Referensi</option>
+                            <option value="Dokumentasi">Dokumentasi</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Simpan ke Brangkas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
